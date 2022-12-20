@@ -1,0 +1,87 @@
+Vault
+- match
+
+VaultUtils
+- match
+
+OrderBook
+- additional 
+	IBasePositionManager.sol import and associated functions 
+	address public positionManager
+	initialize positionManager
+	modifier onlyPositionManager()
+	
+PositionManager
+- missing 
+	SetOrderBook()
+	IShortsTracker
+- additional 
+	constructor address _shortsTracker
+	liquidatePositions()
+	
+FastPriceFeed
+- missing:     
+    uint256 public maxPriceUpdateDelay;
+    uint256 public spreadBasisPointsIfInactive;
+    uint256 public spreadBasisPointsIfChainError;    
+	mapping (address => PriceDataItem) public priceData;
+    mapping (address => uint256) public maxCumulativeDeltaDiffs;
+	setVaultPriceFeed()
+	setMaxTimeDeviation()
+	setMaxPriceUpdateDelay()
+	setSpreadBasisPointsIfInactive()
+	setSpreadBasisPointsIfChainError()
+	setTokenManager()
+	setMaxCumulativeDeltaDiffs
+    uint256 _maxIncreasePositions,
+    uint256 _maxDecreasePositions
+- additional:
+	uint256 public volBasisPoints;
+    setMaxTimeDeviation()
+	
+PositionRouter
+- additional
+	import "./interfaces/IPositionRouterCallbackReceiver.sol";
+	import "../libraries/utils/Address.sol";
+	callbackTarget in Increase and DecreasePositionRequest
+	queueIndex in CreateIncreasedPosition and Decrease
+	address _shortsTracker,
+	setCallbackGasLimit()
+	_callRequestCallback()
+	
+Reader (doesn't look like any interface addresses are set at deployment)
+-additional
+	IERC20
+	IVaultUtils
+	IVault
+	IVaultPriceFeed
+	IYieldTracker
+	IYieldToken
+	IPancakeFactory
+	IVester
+	contract Governable
+	setGov()
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+ 
+

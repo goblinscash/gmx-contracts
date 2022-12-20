@@ -1,0 +1,26 @@
+Contract	        Script	Requirement	Additional Deployments
+Vault	            Deploy	None	
+                                        USDG
+                                        Router
+                                        VaultPriceFeed
+                                        GLP
+                                        GlpManager
+                                        VaultErrorController
+                                        VaultUtils
+OrderBook	        Deploy	Router	
+		                    Vault	
+OrderExecutor	    Deploy	OrderBook	
+		                    Vault	
+ShortsTracker	    Deploy	Vault	
+PositionManageer	Deploy	Router	
+                            ShortsTracker	
+                            OrderBook	
+                            ReferralStorage	
+                            OrderKeepers	
+                            Liquidators	
+PositionRouter	    Deploy	Vault	
+                            Router	
+                            ReferralStorage	
+                            ShortsTrackeer	
+ReferralReader	Deploy	    None	
+ReferralStorage	Deploy	    PositionRouter	
