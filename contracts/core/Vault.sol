@@ -1,16 +1,1054 @@
+// Sources flattened with hardhat v2.9.3 https://hardhat.org
+
+// File contracts/libraries/math/SafeMath.sol
+
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.6.12;
 
-import "../libraries/math/SafeMath.sol";
-import "../libraries/token/IERC20.sol";
-import "../libraries/token/SafeERC20.sol";
-import "../libraries/utils/ReentrancyGuard.sol";
+/**
+ * @dev Wrappers over Solidity's arithmetic operations with added overflow
+ * checks.
+ *
+ * Arithmetic operations in Solidity wrap on overflow. This can easily result
+ * in bugs, because programmers usually assume that an overflow raises an
+ * error, which is the standard behavior in high level programming languages.
+ * `SafeMath` restores this intuition by reverting the transaction when an
+ * operation overflows.
+ *
+ * Using this library instead of the unchecked operations eliminates an entire
+ * class of bugs, so it's recommended to use it always.
+ */
+library SafeMath {
+    /**
+     * @dev Returns the addition of two unsigned integers, reverting on
+     * overflow.
+     *
+     * Counterpart to Solidity's `+` operator.
+     *
+     * Requirements:
+     *
+     * - Addition cannot overflow.
+     */
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a + b;
+        require(c >= a, "SafeMath: addition overflow");
 
-import "../tokens/interfaces/IUSDG.sol";
-import "./interfaces/IVault.sol";
-import "./interfaces/IVaultUtils.sol";
-import "./interfaces/IVaultPriceFeed.sol";
+        return c;
+    }
+
+    /**
+     * @dev Returns the subtraction of two unsigned integers, reverting on
+     * overflow (when the result is negative).
+     *
+     * Counterpart to Solidity's `-` operator.
+     *
+     * Requirements:
+     *
+     * - Subtraction cannot overflow.
+     */
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+        return sub(a, b, "SafeMath: subtraction overflow");
+    }
+
+    /**
+     * @dev Returns the subtraction of two unsigned integers, reverting with custom message on
+     * overflow (when the result is negative).
+     *
+     * Counterpart to Solidity's `-` operator.
+     *
+     * Requirements:
+     *
+     * - Subtraction cannot overflow.
+     */
+    function sub(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
+        require(b <= a, errorMessage);
+        uint256 c = a - b;
+
+        return c;
+    }
+
+    /**
+     * @dev Returns the multiplication of two unsigned integers, reverting on
+     * overflow.
+     *
+     * Counterpart to Solidity's `*` operator.
+     *
+     * Requirements:
+     *
+     * - Multiplication cannot overflow.
+     */
+    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+        // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
+        // benefit is lost if 'b' is also tested.
+        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
+        if (a == 0) {
+            return 0;
+        }
+
+        uint256 c = a * b;
+        require(c / a == b, "SafeMath: multiplication overflow");
+
+        return c;
+    }
+
+    /**
+     * @dev Returns the integer division of two unsigned integers. Reverts on
+     * division by zero. The result is rounded towards zero.
+     *
+     * Counterpart to Solidity's `/` operator. Note: this function uses a
+     * `revert` opcode (which leaves remaining gas untouched) while Solidity
+     * uses an invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
+        return div(a, b, "SafeMath: division by zero");
+    }
+
+    /**
+     * @dev Returns the integer division of two unsigned integers. Reverts with custom message on
+     * division by zero. The result is rounded towards zero.
+     *
+     * Counterpart to Solidity's `/` operator. Note: this function uses a
+     * `revert` opcode (which leaves remaining gas untouched) while Solidity
+     * uses an invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function div(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
+        require(b > 0, errorMessage);
+        uint256 c = a / b;
+        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+
+        return c;
+    }
+
+    /**
+     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
+     * Reverts when dividing by zero.
+     *
+     * Counterpart to Solidity's `%` operator. This function uses a `revert`
+     * opcode (which leaves remaining gas untouched) while Solidity uses an
+     * invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function mod(uint256 a, uint256 b) internal pure returns (uint256) {
+        return mod(a, b, "SafeMath: modulo by zero");
+    }
+
+    /**
+     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
+     * Reverts with custom message when dividing by zero.
+     *
+     * Counterpart to Solidity's `%` operator. This function uses a `revert`
+     * opcode (which leaves remaining gas untouched) while Solidity uses an
+     * invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function mod(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
+        require(b != 0, errorMessage);
+        return a % b;
+    }
+}
+
+
+// File contracts/libraries/token/IERC20.sol
+
+
+pragma solidity 0.6.12;
+
+/**
+ * @dev Interface of the ERC20 standard as defined in the EIP.
+ */
+interface IERC20 {
+    /**
+     * @dev Returns the amount of tokens in existence.
+     */
+    function totalSupply() external view returns (uint256);
+
+    /**
+     * @dev Returns the amount of tokens owned by `account`.
+     */
+    function balanceOf(address account) external view returns (uint256);
+
+    /**
+     * @dev Moves `amount` tokens from the caller's account to `recipient`.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transfer(address recipient, uint256 amount) external returns (bool);
+
+    /**
+     * @dev Returns the remaining number of tokens that `spender` will be
+     * allowed to spend on behalf of `owner` through {transferFrom}. This is
+     * zero by default.
+     *
+     * This value changes when {approve} or {transferFrom} are called.
+     */
+    function allowance(address owner, address spender) external view returns (uint256);
+
+    /**
+     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * IMPORTANT: Beware that changing an allowance with this method brings the risk
+     * that someone may use both the old and the new allowance by unfortunate
+     * transaction ordering. One possible solution to mitigate this race
+     * condition is to first reduce the spender's allowance to 0 and set the
+     * desired value afterwards:
+     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+     *
+     * Emits an {Approval} event.
+     */
+    function approve(address spender, uint256 amount) external returns (bool);
+
+    /**
+     * @dev Moves `amount` tokens from `sender` to `recipient` using the
+     * allowance mechanism. `amount` is then deducted from the caller's
+     * allowance.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) external returns (bool);
+
+    /**
+     * @dev Emitted when `value` tokens are moved from one account (`from`) to
+     * another (`to`).
+     *
+     * Note that `value` may be zero.
+     */
+    event Transfer(address indexed from, address indexed to, uint256 value);
+
+    /**
+     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
+     * a call to {approve}. `value` is the new allowance.
+     */
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+}
+
+
+// File contracts/libraries/utils/Address.sol
+
+
+pragma solidity ^0.6.2;
+
+/**
+ * @dev Collection of functions related to the address type
+ */
+library Address {
+    /**
+     * @dev Returns true if `account` is a contract.
+     *
+     * [IMPORTANT]
+     * ====
+     * It is unsafe to assume that an address for which this function returns
+     * false is an externally-owned account (EOA) and not a contract.
+     *
+     * Among others, `isContract` will return false for the following
+     * types of addresses:
+     *
+     *  - an externally-owned account
+     *  - a contract in construction
+     *  - an address where a contract will be created
+     *  - an address where a contract lived, but was destroyed
+     * ====
+     */
+    function isContract(address account) internal view returns (bool) {
+        // This method relies on extcodesize, which returns 0 for contracts in
+        // construction, since the code is only stored at the end of the
+        // constructor execution.
+
+        uint256 size;
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            size := extcodesize(account)
+        }
+        return size > 0;
+    }
+
+    /**
+     * @dev Replacement for Solidity's `transfer`: sends `amount` wei to
+     * `recipient`, forwarding all available gas and reverting on errors.
+     *
+     * https://eips.ethereum.org/EIPS/eip-1884[EIP1884] increases the gas cost
+     * of certain opcodes, possibly making contracts go over the 2300 gas limit
+     * imposed by `transfer`, making them unable to receive funds via
+     * `transfer`. {sendValue} removes this limitation.
+     *
+     * https://diligence.consensys.net/posts/2019/09/stop-using-soliditys-transfer-now/[Learn more].
+     *
+     * IMPORTANT: because control is transferred to `recipient`, care must be
+     * taken to not create reentrancy vulnerabilities. Consider using
+     * {ReentrancyGuard} or the
+     * https://solidity.readthedocs.io/en/v0.5.11/security-considerations.html#use-the-checks-effects-interactions-pattern[checks-effects-interactions pattern].
+     */
+    function sendValue(address payable recipient, uint256 amount) internal {
+        require(address(this).balance >= amount, "Address: insufficient balance");
+
+        // solhint-disable-next-line avoid-low-level-calls, avoid-call-value
+        (bool success, ) = recipient.call{value: amount}("");
+        require(success, "Address: unable to send value, recipient may have reverted");
+    }
+
+    /**
+     * @dev Performs a Solidity function call using a low level `call`. A
+     * plain`call` is an unsafe replacement for a function call: use this
+     * function instead.
+     *
+     * If `target` reverts with a revert reason, it is bubbled up by this
+     * function (like regular Solidity function calls).
+     *
+     * Returns the raw returned data. To convert to the expected return value,
+     * use https://solidity.readthedocs.io/en/latest/units-and-global-variables.html?highlight=abi.decode#abi-encoding-and-decoding-functions[`abi.decode`].
+     *
+     * Requirements:
+     *
+     * - `target` must be a contract.
+     * - calling `target` with `data` must not revert.
+     *
+     * _Available since v3.1._
+     */
+    function functionCall(address target, bytes memory data) internal returns (bytes memory) {
+        return functionCall(target, data, "Address: low-level call failed");
+    }
+
+    /**
+     * @dev Same as {xref-Address-functionCall-address-bytes-}[`functionCall`], but with
+     * `errorMessage` as a fallback revert reason when `target` reverts.
+     *
+     * _Available since v3.1._
+     */
+    function functionCall(
+        address target,
+        bytes memory data,
+        string memory errorMessage
+    ) internal returns (bytes memory) {
+        return functionCallWithValue(target, data, 0, errorMessage);
+    }
+
+    /**
+     * @dev Same as {xref-Address-functionCall-address-bytes-}[`functionCall`],
+     * but also transferring `value` wei to `target`.
+     *
+     * Requirements:
+     *
+     * - the calling contract must have an ETH balance of at least `value`.
+     * - the called Solidity function must be `payable`.
+     *
+     * _Available since v3.1._
+     */
+    function functionCallWithValue(
+        address target,
+        bytes memory data,
+        uint256 value
+    ) internal returns (bytes memory) {
+        return functionCallWithValue(target, data, value, "Address: low-level call with value failed");
+    }
+
+    /**
+     * @dev Same as {xref-Address-functionCallWithValue-address-bytes-uint256-}[`functionCallWithValue`], but
+     * with `errorMessage` as a fallback revert reason when `target` reverts.
+     *
+     * _Available since v3.1._
+     */
+    function functionCallWithValue(
+        address target,
+        bytes memory data,
+        uint256 value,
+        string memory errorMessage
+    ) internal returns (bytes memory) {
+        require(address(this).balance >= value, "Address: insufficient balance for call");
+        require(isContract(target), "Address: call to non-contract");
+
+        // solhint-disable-next-line avoid-low-level-calls
+        (bool success, bytes memory returndata) = target.call{value: value}(data);
+        return _verifyCallResult(success, returndata, errorMessage);
+    }
+
+    /**
+     * @dev Same as {xref-Address-functionCall-address-bytes-}[`functionCall`],
+     * but performing a static call.
+     *
+     * _Available since v3.3._
+     */
+    function functionStaticCall(address target, bytes memory data) internal view returns (bytes memory) {
+        return functionStaticCall(target, data, "Address: low-level static call failed");
+    }
+
+    /**
+     * @dev Same as {xref-Address-functionCall-address-bytes-string-}[`functionCall`],
+     * but performing a static call.
+     *
+     * _Available since v3.3._
+     */
+    function functionStaticCall(
+        address target,
+        bytes memory data,
+        string memory errorMessage
+    ) internal view returns (bytes memory) {
+        require(isContract(target), "Address: static call to non-contract");
+
+        // solhint-disable-next-line avoid-low-level-calls
+        (bool success, bytes memory returndata) = target.staticcall(data);
+        return _verifyCallResult(success, returndata, errorMessage);
+    }
+
+    /**
+     * @dev Same as {xref-Address-functionCall-address-bytes-}[`functionCall`],
+     * but performing a delegate call.
+     *
+     * _Available since v3.3._
+     */
+    function functionDelegateCall(address target, bytes memory data) internal returns (bytes memory) {
+        return functionDelegateCall(target, data, "Address: low-level delegate call failed");
+    }
+
+    /**
+     * @dev Same as {xref-Address-functionCall-address-bytes-string-}[`functionCall`],
+     * but performing a delegate call.
+     *
+     * _Available since v3.3._
+     */
+    function functionDelegateCall(
+        address target,
+        bytes memory data,
+        string memory errorMessage
+    ) internal returns (bytes memory) {
+        require(isContract(target), "Address: delegate call to non-contract");
+
+        // solhint-disable-next-line avoid-low-level-calls
+        (bool success, bytes memory returndata) = target.delegatecall(data);
+        return _verifyCallResult(success, returndata, errorMessage);
+    }
+
+    function _verifyCallResult(
+        bool success,
+        bytes memory returndata,
+        string memory errorMessage
+    ) private pure returns (bytes memory) {
+        if (success) {
+            return returndata;
+        } else {
+            // Look for revert reason and bubble it up if present
+            if (returndata.length > 0) {
+                // The easiest way to bubble the revert reason is using memory via assembly
+
+                // solhint-disable-next-line no-inline-assembly
+                assembly {
+                    let returndata_size := mload(returndata)
+                    revert(add(32, returndata), returndata_size)
+                }
+            } else {
+                revert(errorMessage);
+            }
+        }
+    }
+}
+
+
+// File contracts/libraries/token/SafeERC20.sol
+
+
+pragma solidity 0.6.12;
+
+
+
+/**
+ * @title SafeERC20
+ * @dev Wrappers around ERC20 operations that throw on failure (when the token
+ * contract returns false). Tokens that return no value (and instead revert or
+ * throw on failure) are also supported, non-reverting calls are assumed to be
+ * successful.
+ * To use this library you can add a `using SafeERC20 for IERC20;` statement to your contract,
+ * which allows you to call the safe operations as `token.safeTransfer(...)`, etc.
+ */
+library SafeERC20 {
+    using SafeMath for uint256;
+    using Address for address;
+
+    function safeTransfer(
+        IERC20 token,
+        address to,
+        uint256 value
+    ) internal {
+        _callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));
+    }
+
+    function safeTransferFrom(
+        IERC20 token,
+        address from,
+        address to,
+        uint256 value
+    ) internal {
+        _callOptionalReturn(token, abi.encodeWithSelector(token.transferFrom.selector, from, to, value));
+    }
+
+    /**
+     * @dev Deprecated. This function has issues similar to the ones found in
+     * {IERC20-approve}, and its usage is discouraged.
+     *
+     * Whenever possible, use {safeIncreaseAllowance} and
+     * {safeDecreaseAllowance} instead.
+     */
+    function safeApprove(
+        IERC20 token,
+        address spender,
+        uint256 value
+    ) internal {
+        // safeApprove should only be called when setting an initial allowance,
+        // or when resetting it to zero. To increase and decrease it, use
+        // 'safeIncreaseAllowance' and 'safeDecreaseAllowance'
+        // solhint-disable-next-line max-line-length
+        require(
+            (value == 0) || (token.allowance(address(this), spender) == 0),
+            "SafeERC20: approve from non-zero to non-zero allowance"
+        );
+        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, value));
+    }
+
+    function safeIncreaseAllowance(
+        IERC20 token,
+        address spender,
+        uint256 value
+    ) internal {
+        uint256 newAllowance = token.allowance(address(this), spender).add(value);
+        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
+    }
+
+    function safeDecreaseAllowance(
+        IERC20 token,
+        address spender,
+        uint256 value
+    ) internal {
+        uint256 newAllowance = token.allowance(address(this), spender).sub(
+            value,
+            "SafeERC20: decreased allowance below zero"
+        );
+        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
+    }
+
+    /**
+     * @dev Imitates a Solidity high-level call (i.e. a regular function call to a contract), relaxing the requirement
+     * on the return value: the return value is optional (but if data is returned, it must not be false).
+     * @param token The token targeted by the call.
+     * @param data The call data (encoded using abi.encode or one of its variants).
+     */
+    function _callOptionalReturn(IERC20 token, bytes memory data) private {
+        // We need to perform a low level call here, to bypass Solidity's return data size checking mechanism, since
+        // we're implementing it ourselves. We use {Address.functionCall} to perform this call, which verifies that
+        // the target address contains contract code and also asserts for success in the low-level call.
+
+        bytes memory returndata = address(token).functionCall(data, "SafeERC20: low-level call failed");
+        if (returndata.length > 0) {
+            // Return data is optional
+            // solhint-disable-next-line max-line-length
+            require(abi.decode(returndata, (bool)), "SafeERC20: ERC20 operation did not succeed");
+        }
+    }
+}
+
+
+// File contracts/libraries/utils/ReentrancyGuard.sol
+
+
+pragma solidity 0.6.12;
+
+/**
+ * @dev Contract module that helps prevent reentrant calls to a function.
+ *
+ * Inheriting from `ReentrancyGuard` will make the {nonReentrant} modifier
+ * available, which can be applied to functions to make sure there are no nested
+ * (reentrant) calls to them.
+ *
+ * Note that because there is a single `nonReentrant` guard, functions marked as
+ * `nonReentrant` may not call one another. This can be worked around by making
+ * those functions `private`, and then adding `external` `nonReentrant` entry
+ * points to them.
+ *
+ * TIP: If you would like to learn more about reentrancy and alternative ways
+ * to protect against it, check out our blog post
+ * https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul].
+ */
+contract ReentrancyGuard {
+    // Booleans are more expensive than uint256 or any type that takes up a full
+    // word because each write operation emits an extra SLOAD to first read the
+    // slot's contents, replace the bits taken up by the boolean, and then write
+    // back. This is the compiler's defense against contract upgrades and
+    // pointer aliasing, and it cannot be disabled.
+
+    // The values being non-zero value makes deployment a bit more expensive,
+    // but in exchange the refund on every call to nonReentrant will be lower in
+    // amount. Since refunds are capped to a percentage of the total
+    // transaction's gas, it is best to keep them low in cases like this one, to
+    // increase the likelihood of the full refund coming into effect.
+    uint256 private constant _NOT_ENTERED = 1;
+    uint256 private constant _ENTERED = 2;
+
+    uint256 private _status;
+
+    constructor() internal {
+        _status = _NOT_ENTERED;
+    }
+
+    /**
+     * @dev Prevents a contract from calling itself, directly or indirectly.
+     * Calling a `nonReentrant` function from another `nonReentrant`
+     * function is not supported. It is possible to prevent this from happening
+     * by making the `nonReentrant` function external, and make it call a
+     * `private` function that does the actual work.
+     */
+    modifier nonReentrant() {
+        // On the first call to nonReentrant, _notEntered will be true
+        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
+
+        // Any calls to nonReentrant after this point will fail
+        _status = _ENTERED;
+
+        _;
+
+        // By storing the original value once again, a refund is triggered (see
+        // https://eips.ethereum.org/EIPS/eip-2200)
+        _status = _NOT_ENTERED;
+    }
+}
+
+
+// File contracts/tokens/interfaces/IUSDG.sol
+
+
+pragma solidity 0.6.12;
+
+interface IUSDG {
+    function addVault(address _vault) external;
+
+    function removeVault(address _vault) external;
+
+    function mint(address _account, uint256 _amount) external;
+
+    function burn(address _account, uint256 _amount) external;
+}
+
+
+// File contracts/core/interfaces/IVaultUtils.sol
+
+
+pragma solidity 0.6.12;
+
+interface IVaultUtils {
+    function updateCumulativeFundingRate(address _collateralToken, address _indexToken) external returns (bool);
+
+    function validateIncreasePosition(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        uint256 _sizeDelta,
+        bool _isLong
+    ) external view;
+
+    function validateDecreasePosition(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        uint256 _collateralDelta,
+        uint256 _sizeDelta,
+        bool _isLong,
+        address _receiver
+    ) external view;
+
+    function validateLiquidation(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        bool _isLong,
+        bool _raise
+    ) external view returns (uint256, uint256);
+
+    function getEntryFundingRate(
+        address _collateralToken,
+        address _indexToken,
+        bool _isLong
+    ) external view returns (uint256);
+
+    function getPositionFee(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        bool _isLong,
+        uint256 _sizeDelta
+    ) external view returns (uint256);
+
+    function getFundingFee(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        bool _isLong,
+        uint256 _size,
+        uint256 _entryFundingRate
+    ) external view returns (uint256);
+
+    function getBuyUsdgFeeBasisPoints(address _token, uint256 _usdgAmount) external view returns (uint256);
+
+    function getSellUsdgFeeBasisPoints(address _token, uint256 _usdgAmount) external view returns (uint256);
+
+    function getSwapFeeBasisPoints(
+        address _tokenIn,
+        address _tokenOut,
+        uint256 _usdgAmount
+    ) external view returns (uint256);
+
+    function getFeeBasisPoints(
+        address _token,
+        uint256 _usdgDelta,
+        uint256 _feeBasisPoints,
+        uint256 _taxBasisPoints,
+        bool _increment
+    ) external view returns (uint256);
+}
+
+
+// File contracts/core/interfaces/IVault.sol
+
+
+pragma solidity 0.6.12;
+
+interface IVault {
+    function isInitialized() external view returns (bool);
+
+    function isSwapEnabled() external view returns (bool);
+
+    function isLeverageEnabled() external view returns (bool);
+
+    function setVaultUtils(IVaultUtils _vaultUtils) external;
+
+    function setError(uint256 _errorCode, string calldata _error) external;
+
+    function router() external view returns (address);
+
+    function usdg() external view returns (address);
+
+    function gov() external view returns (address);
+
+    function whitelistedTokenCount() external view returns (uint256);
+
+    function maxLeverage() external view returns (uint256);
+
+    function minProfitTime() external view returns (uint256);
+
+    function hasDynamicFees() external view returns (bool);
+
+    function fundingInterval() external view returns (uint256);
+
+    function totalTokenWeights() external view returns (uint256);
+
+    function getTargetUsdgAmount(address _token) external view returns (uint256);
+
+    function inManagerMode() external view returns (bool);
+
+    function inPrivateLiquidationMode() external view returns (bool);
+
+    function maxGasPrice() external view returns (uint256);
+
+    function approvedRouters(address _account, address _router) external view returns (bool);
+
+    function isLiquidator(address _account) external view returns (bool);
+
+    function isManager(address _account) external view returns (bool);
+
+    function minProfitBasisPoints(address _token) external view returns (uint256);
+
+    function tokenBalances(address _token) external view returns (uint256);
+
+    function lastFundingTimes(address _token) external view returns (uint256);
+
+    function setMaxLeverage(uint256 _maxLeverage) external;
+
+    function setInManagerMode(bool _inManagerMode) external;
+
+    function setManager(address _manager, bool _isManager) external;
+
+    function setIsSwapEnabled(bool _isSwapEnabled) external;
+
+    function setIsLeverageEnabled(bool _isLeverageEnabled) external;
+
+    function setMaxGasPrice(uint256 _maxGasPrice) external;
+
+    function setUsdgAmount(address _token, uint256 _amount) external;
+
+    function setBufferAmount(address _token, uint256 _amount) external;
+
+    function setMaxGlobalShortSize(address _token, uint256 _amount) external;
+
+    function setInPrivateLiquidationMode(bool _inPrivateLiquidationMode) external;
+
+    function setLiquidator(address _liquidator, bool _isActive) external;
+
+    function setFundingRate(
+        uint256 _fundingInterval,
+        uint256 _fundingRateFactor,
+        uint256 _stableFundingRateFactor
+    ) external;
+
+    function setFees(
+        uint256 _taxBasisPoints,
+        uint256 _stableTaxBasisPoints,
+        uint256 _mintBurnFeeBasisPoints,
+        uint256 _swapFeeBasisPoints,
+        uint256 _stableSwapFeeBasisPoints,
+        uint256 _marginFeeBasisPoints,
+        uint256 _liquidationFeeUsd,
+        uint256 _minProfitTime,
+        bool _hasDynamicFees
+    ) external;
+
+    function setTokenConfig(
+        address _token,
+        uint256 _tokenDecimals,
+        uint256 _redemptionBps,
+        uint256 _minProfitBps,
+        uint256 _maxUsdgAmount,
+        bool _isStable,
+        bool _isShortable
+    ) external;
+
+    function setPriceFeed(address _priceFeed) external;
+
+    function withdrawFees(address _token, address _receiver) external returns (uint256);
+
+    function directPoolDeposit(address _token) external;
+
+    function buyUSDG(address _token, address _receiver) external returns (uint256);
+
+    function sellUSDG(address _token, address _receiver) external returns (uint256);
+
+    function swap(
+        address _tokenIn,
+        address _tokenOut,
+        address _receiver
+    ) external returns (uint256);
+
+    function increasePosition(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        uint256 _sizeDelta,
+        bool _isLong
+    ) external;
+
+    function decreasePosition(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        uint256 _collateralDelta,
+        uint256 _sizeDelta,
+        bool _isLong,
+        address _receiver
+    ) external returns (uint256);
+
+    function liquidatePosition(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        bool _isLong,
+        address _feeReceiver
+    ) external;
+
+    function tokenToUsdMin(address _token, uint256 _tokenAmount) external view returns (uint256);
+
+    function priceFeed() external view returns (address);
+
+    function fundingRateFactor() external view returns (uint256);
+
+    function stableFundingRateFactor() external view returns (uint256);
+
+    function cumulativeFundingRates(address _token) external view returns (uint256);
+
+    function getNextFundingRate(address _token) external view returns (uint256);
+
+    function getFeeBasisPoints(
+        address _token,
+        uint256 _usdgDelta,
+        uint256 _feeBasisPoints,
+        uint256 _taxBasisPoints,
+        bool _increment
+    ) external view returns (uint256);
+
+    function liquidationFeeUsd() external view returns (uint256);
+
+    function taxBasisPoints() external view returns (uint256);
+
+    function stableTaxBasisPoints() external view returns (uint256);
+
+    function mintBurnFeeBasisPoints() external view returns (uint256);
+
+    function swapFeeBasisPoints() external view returns (uint256);
+
+    function stableSwapFeeBasisPoints() external view returns (uint256);
+
+    function marginFeeBasisPoints() external view returns (uint256);
+
+    function allWhitelistedTokensLength() external view returns (uint256);
+
+    function allWhitelistedTokens(uint256) external view returns (address);
+
+    function whitelistedTokens(address _token) external view returns (bool);
+
+    function stableTokens(address _token) external view returns (bool);
+
+    function shortableTokens(address _token) external view returns (bool);
+
+    function feeReserves(address _token) external view returns (uint256);
+
+    function globalShortSizes(address _token) external view returns (uint256);
+
+    function globalShortAveragePrices(address _token) external view returns (uint256);
+
+    function maxGlobalShortSizes(address _token) external view returns (uint256);
+
+    function tokenDecimals(address _token) external view returns (uint256);
+
+    function tokenWeights(address _token) external view returns (uint256);
+
+    function guaranteedUsd(address _token) external view returns (uint256);
+
+    function poolAmounts(address _token) external view returns (uint256);
+
+    function bufferAmounts(address _token) external view returns (uint256);
+
+    function reservedAmounts(address _token) external view returns (uint256);
+
+    function usdgAmounts(address _token) external view returns (uint256);
+
+    function maxUsdgAmounts(address _token) external view returns (uint256);
+
+    function getRedemptionAmount(address _token, uint256 _usdgAmount) external view returns (uint256);
+
+    function getMaxPrice(address _token) external view returns (uint256);
+
+    function getMinPrice(address _token) external view returns (uint256);
+
+    function getDelta(
+        address _indexToken,
+        uint256 _size,
+        uint256 _averagePrice,
+        bool _isLong,
+        uint256 _lastIncreasedTime
+    ) external view returns (bool, uint256);
+
+    function getPosition(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        bool _isLong
+    )
+        external
+        view
+        returns (
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            bool,
+            uint256
+        );
+}
+
+
+// File contracts/core/interfaces/IVaultPriceFeed.sol
+
+
+pragma solidity 0.6.12;
+
+interface IVaultPriceFeed {
+    function adjustmentBasisPoints(address _token) external view returns (uint256);
+
+    function isAdjustmentAdditive(address _token) external view returns (bool);
+
+    function setAdjustment(
+        address _token,
+        bool _isAdditive,
+        uint256 _adjustmentBps
+    ) external;
+
+    function setUseV2Pricing(bool _useV2Pricing) external;
+
+    function setIsAmmEnabled(bool _isEnabled) external;
+
+    function setIsSecondaryPriceEnabled(bool _isEnabled) external;
+
+    function setSpreadBasisPoints(address _token, uint256 _spreadBasisPoints) external;
+
+    function setSpreadThresholdBasisPoints(uint256 _spreadThresholdBasisPoints) external;
+
+    function setFavorPrimaryPrice(bool _favorPrimaryPrice) external;
+
+    function setPriceSampleSpace(uint256 _priceSampleSpace) external;
+
+    function setMaxStrictPriceDeviation(uint256 _maxStrictPriceDeviation) external;
+
+    function getPrice(
+        address _token,
+        bool _maximise,
+        bool _includeAmmPrice,
+        bool _useSwapPricing
+    ) external view returns (uint256);
+
+    function getAmmPrice(address _token) external view returns (uint256);
+
+    function getPrimaryPrice(address _token, bool _maximise) external view returns (uint256);
+
+    function setTokenConfig(
+        address _token,
+        address _priceFeed,
+        uint256 _priceDecimals,
+        bool _isStrictStable
+    ) external;
+}
+
+
+// File contracts/core/Vault.sol
+
+
+pragma solidity 0.6.12;
+
+
+
+
+
+
 
 contract Vault is ReentrancyGuard, IVault {
     using SafeMath for uint256;
@@ -28,7 +1066,7 @@ contract Vault is ReentrancyGuard, IVault {
 
     uint256 public constant BASIS_POINTS_DIVISOR = 10000;
     uint256 public constant FUNDING_RATE_PRECISION = 1000000;
-    uint256 public constant PRICE_PRECISION = 10 ** 30;
+    uint256 public constant PRICE_PRECISION = 10**30;
     uint256 public constant MIN_LEVERAGE = 10000; // 1x
     uint256 public constant USDG_DECIMALS = 18;
     uint256 public constant MAX_FEE_BASIS_POINTS = 500; // 5%
@@ -78,68 +1116,76 @@ contract Vault is ReentrancyGuard, IVault {
 
     uint256 public override maxGasPrice;
 
-    mapping (address => mapping (address => bool)) public override approvedRouters;
-    mapping (address => bool) public override isLiquidator;
-    mapping (address => bool) public override isManager;
+    mapping(address => mapping(address => bool)) public override approvedRouters;
+    mapping(address => bool) public override isLiquidator;
+    mapping(address => bool) public override isManager;
 
     address[] public override allWhitelistedTokens;
 
-    mapping (address => bool) public override whitelistedTokens;
-    mapping (address => uint256) public override tokenDecimals;
-    mapping (address => uint256) public override minProfitBasisPoints;
-    mapping (address => bool) public override stableTokens;
-    mapping (address => bool) public override shortableTokens;
+    mapping(address => bool) public override whitelistedTokens;
+    mapping(address => uint256) public override tokenDecimals;
+    mapping(address => uint256) public override minProfitBasisPoints;
+    mapping(address => bool) public override stableTokens;
+    mapping(address => bool) public override shortableTokens;
 
     // tokenBalances is used only to determine _transferIn values
-    mapping (address => uint256) public override tokenBalances;
+    mapping(address => uint256) public override tokenBalances;
 
     // tokenWeights allows customisation of index composition
-    mapping (address => uint256) public override tokenWeights;
+    mapping(address => uint256) public override tokenWeights;
 
     // usdgAmounts tracks the amount of USDG debt for each whitelisted token
-    mapping (address => uint256) public override usdgAmounts;
+    mapping(address => uint256) public override usdgAmounts;
 
     // maxUsdgAmounts allows setting a max amount of USDG debt for a token
-    mapping (address => uint256) public override maxUsdgAmounts;
+    mapping(address => uint256) public override maxUsdgAmounts;
 
     // poolAmounts tracks the number of received tokens that can be used for leverage
     // this is tracked separately from tokenBalances to exclude funds that are deposited as margin collateral
-    mapping (address => uint256) public override poolAmounts;
+    mapping(address => uint256) public override poolAmounts;
 
     // reservedAmounts tracks the number of tokens reserved for open leverage positions
-    mapping (address => uint256) public override reservedAmounts;
+    mapping(address => uint256) public override reservedAmounts;
 
     // bufferAmounts allows specification of an amount to exclude from swaps
     // this can be used to ensure a certain amount of liquidity is available for leverage positions
-    mapping (address => uint256) public override bufferAmounts;
+    mapping(address => uint256) public override bufferAmounts;
 
     // guaranteedUsd tracks the amount of USD that is "guaranteed" by opened leverage positions
     // this value is used to calculate the redemption values for selling of USDG
     // this is an estimated amount, it is possible for the actual guaranteed value to be lower
     // in the case of sudden price decreases, the guaranteed value should be corrected
     // after liquidations are carried out
-    mapping (address => uint256) public override guaranteedUsd;
+    mapping(address => uint256) public override guaranteedUsd;
 
     // cumulativeFundingRates tracks the funding rates based on utilization
-    mapping (address => uint256) public override cumulativeFundingRates;
+    mapping(address => uint256) public override cumulativeFundingRates;
     // lastFundingTimes tracks the last time funding was updated for a token
-    mapping (address => uint256) public override lastFundingTimes;
+    mapping(address => uint256) public override lastFundingTimes;
 
     // positions tracks all open positions
-    mapping (bytes32 => Position) public positions;
+    mapping(bytes32 => Position) public positions;
 
     // feeReserves tracks the amount of fees per token
-    mapping (address => uint256) public override feeReserves;
+    mapping(address => uint256) public override feeReserves;
 
-    mapping (address => uint256) public override globalShortSizes;
-    mapping (address => uint256) public override globalShortAveragePrices;
-    mapping (address => uint256) public override maxGlobalShortSizes;
+    mapping(address => uint256) public override globalShortSizes;
+    mapping(address => uint256) public override globalShortAveragePrices;
+    mapping(address => uint256) public override maxGlobalShortSizes;
 
-    mapping (uint256 => string) public errors;
+    mapping(uint256 => string) public errors;
 
     event BuyUSDG(address account, address token, uint256 tokenAmount, uint256 usdgAmount, uint256 feeBasisPoints);
     event SellUSDG(address account, address token, uint256 usdgAmount, uint256 tokenAmount, uint256 feeBasisPoints);
-    event Swap(address account, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOut, uint256 amountOutAfterFees, uint256 feeBasisPoints);
+    event Swap(
+        address account,
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn,
+        uint256 amountOut,
+        uint256 amountOutAfterFees,
+        uint256 feeBasisPoints
+    );
 
     event IncreasePosition(
         bytes32 key,
@@ -252,7 +1298,7 @@ contract Vault is ReentrancyGuard, IVault {
         errors[_errorCode] = _error;
     }
 
-    function allWhitelistedTokensLength() external override view returns (uint256) {
+    function allWhitelistedTokensLength() external view override returns (uint256) {
         return allWhitelistedTokens.length;
     }
 
@@ -347,7 +1393,11 @@ contract Vault is ReentrancyGuard, IVault {
         hasDynamicFees = _hasDynamicFees;
     }
 
-    function setFundingRate(uint256 _fundingInterval, uint256 _fundingRateFactor, uint256 _stableFundingRateFactor) external override {
+    function setFundingRate(
+        uint256 _fundingInterval,
+        uint256 _fundingRateFactor,
+        uint256 _stableFundingRateFactor
+    ) external override {
         _onlyGov();
         _validate(_fundingInterval >= MIN_FUNDING_RATE_INTERVAL, 10);
         _validate(_fundingRateFactor <= MAX_FUNDING_RATE_FACTOR, 11);
@@ -407,7 +1457,9 @@ contract Vault is ReentrancyGuard, IVault {
     function withdrawFees(address _token, address _receiver) external override returns (uint256) {
         _onlyGov();
         uint256 amount = feeReserves[_token];
-        if(amount == 0) { return 0; }
+        if (amount == 0) {
+            return 0;
+        }
         feeReserves[_token] = 0;
         _transferOut(_token, amount, _receiver);
         return amount;
@@ -434,7 +1486,11 @@ contract Vault is ReentrancyGuard, IVault {
     }
 
     // the governance controlling this function should have a timelock
-    function upgradeVault(address _newVault, address _token, uint256 _amount) external {
+    function upgradeVault(
+        address _newVault,
+        address _token,
+        uint256 _amount
+    ) external {
         _onlyGov();
         IERC20(_token).safeTransfer(_newVault, _amount);
     }
@@ -517,7 +1573,11 @@ contract Vault is ReentrancyGuard, IVault {
         return amountOut;
     }
 
-    function swap(address _tokenIn, address _tokenOut, address _receiver) external override nonReentrant returns (uint256) {
+    function swap(
+        address _tokenIn,
+        address _tokenOut,
+        address _receiver
+    ) external override nonReentrant returns (uint256) {
         _validate(isSwapEnabled, 23);
         _validate(whitelistedTokens[_tokenIn], 24);
         _validate(whitelistedTokens[_tokenOut], 25);
@@ -560,7 +1620,13 @@ contract Vault is ReentrancyGuard, IVault {
         return amountOutAfterFees;
     }
 
-    function increasePosition(address _account, address _collateralToken, address _indexToken, uint256 _sizeDelta, bool _isLong) external override nonReentrant {
+    function increasePosition(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        uint256 _sizeDelta,
+        bool _isLong
+    ) external override nonReentrant {
         _validate(isLeverageEnabled, 28);
         _validateGasPrice();
         _validateRouter(_account);
@@ -579,10 +1645,26 @@ contract Vault is ReentrancyGuard, IVault {
         }
 
         if (position.size > 0 && _sizeDelta > 0) {
-            position.averagePrice = getNextAveragePrice(_indexToken, position.size, position.averagePrice, _isLong, price, _sizeDelta, position.lastIncreasedTime);
+            position.averagePrice = getNextAveragePrice(
+                _indexToken,
+                position.size,
+                position.averagePrice,
+                _isLong,
+                price,
+                _sizeDelta,
+                position.lastIncreasedTime
+            );
         }
 
-        uint256 fee = _collectMarginFees(_account, _collateralToken, _indexToken, _isLong, _sizeDelta, position.size, position.entryFundingRate);
+        uint256 fee = _collectMarginFees(
+            _account,
+            _collateralToken,
+            _indexToken,
+            _isLong,
+            _sizeDelta,
+            position.size,
+            position.entryFundingRate
+        );
         uint256 collateralDelta = _transferIn(_collateralToken);
         uint256 collateralDeltaUsd = tokenToUsdMin(_collateralToken, collateralDelta);
 
@@ -624,18 +1706,70 @@ contract Vault is ReentrancyGuard, IVault {
             _increaseGlobalShortSize(_indexToken, _sizeDelta);
         }
 
-        emit IncreasePosition(key, _account, _collateralToken, _indexToken, collateralDeltaUsd, _sizeDelta, _isLong, price, fee);
-        emit UpdatePosition(key, position.size, position.collateral, position.averagePrice, position.entryFundingRate, position.reserveAmount, position.realisedPnl, price);
+        emit IncreasePosition(
+            key,
+            _account,
+            _collateralToken,
+            _indexToken,
+            collateralDeltaUsd,
+            _sizeDelta,
+            _isLong,
+            price,
+            fee
+        );
+        emit UpdatePosition(
+            key,
+            position.size,
+            position.collateral,
+            position.averagePrice,
+            position.entryFundingRate,
+            position.reserveAmount,
+            position.realisedPnl,
+            price
+        );
     }
 
-    function decreasePosition(address _account, address _collateralToken, address _indexToken, uint256 _collateralDelta, uint256 _sizeDelta, bool _isLong, address _receiver) external override nonReentrant returns (uint256) {
+    function decreasePosition(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        uint256 _collateralDelta,
+        uint256 _sizeDelta,
+        bool _isLong,
+        address _receiver
+    ) external override nonReentrant returns (uint256) {
         _validateGasPrice();
         _validateRouter(_account);
-        return _decreasePosition(_account, _collateralToken, _indexToken, _collateralDelta, _sizeDelta, _isLong, _receiver);
+        return
+            _decreasePosition(
+                _account,
+                _collateralToken,
+                _indexToken,
+                _collateralDelta,
+                _sizeDelta,
+                _isLong,
+                _receiver
+            );
     }
 
-    function _decreasePosition(address _account, address _collateralToken, address _indexToken, uint256 _collateralDelta, uint256 _sizeDelta, bool _isLong, address _receiver) private returns (uint256) {
-        vaultUtils.validateDecreasePosition(_account, _collateralToken, _indexToken, _collateralDelta, _sizeDelta, _isLong, _receiver);
+    function _decreasePosition(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        uint256 _collateralDelta,
+        uint256 _sizeDelta,
+        bool _isLong,
+        address _receiver
+    ) private returns (uint256) {
+        vaultUtils.validateDecreasePosition(
+            _account,
+            _collateralToken,
+            _indexToken,
+            _collateralDelta,
+            _sizeDelta,
+            _isLong,
+            _receiver
+        );
         updateCumulativeFundingRate(_collateralToken, _indexToken);
 
         bytes32 key = getPositionKey(_account, _collateralToken, _indexToken, _isLong);
@@ -647,12 +1781,19 @@ contract Vault is ReentrancyGuard, IVault {
         uint256 collateral = position.collateral;
         // scrop variables to avoid stack too deep errors
         {
-        uint256 reserveDelta = position.reserveAmount.mul(_sizeDelta).div(position.size);
-        position.reserveAmount = position.reserveAmount.sub(reserveDelta);
-        _decreaseReservedAmount(_collateralToken, reserveDelta);
+            uint256 reserveDelta = position.reserveAmount.mul(_sizeDelta).div(position.size);
+            position.reserveAmount = position.reserveAmount.sub(reserveDelta);
+            _decreaseReservedAmount(_collateralToken, reserveDelta);
         }
 
-        (uint256 usdOut, uint256 usdOutAfterFee) = _reduceCollateral(_account, _collateralToken, _indexToken, _collateralDelta, _sizeDelta, _isLong);
+        (uint256 usdOut, uint256 usdOutAfterFee) = _reduceCollateral(
+            _account,
+            _collateralToken,
+            _indexToken,
+            _collateralDelta,
+            _sizeDelta,
+            _isLong
+        );
 
         if (position.size != _sizeDelta) {
             position.entryFundingRate = getEntryFundingRate(_collateralToken, _indexToken, _isLong);
@@ -667,8 +1808,27 @@ contract Vault is ReentrancyGuard, IVault {
             }
 
             uint256 price = _isLong ? getMinPrice(_indexToken) : getMaxPrice(_indexToken);
-            emit DecreasePosition(key, _account, _collateralToken, _indexToken, _collateralDelta, _sizeDelta, _isLong, price, usdOut.sub(usdOutAfterFee));
-            emit UpdatePosition(key, position.size, position.collateral, position.averagePrice, position.entryFundingRate, position.reserveAmount, position.realisedPnl, price);
+            emit DecreasePosition(
+                key,
+                _account,
+                _collateralToken,
+                _indexToken,
+                _collateralDelta,
+                _sizeDelta,
+                _isLong,
+                price,
+                usdOut.sub(usdOutAfterFee)
+            );
+            emit UpdatePosition(
+                key,
+                position.size,
+                position.collateral,
+                position.averagePrice,
+                position.entryFundingRate,
+                position.reserveAmount,
+                position.realisedPnl,
+                price
+            );
         } else {
             if (_isLong) {
                 _increaseGuaranteedUsd(_collateralToken, collateral);
@@ -676,8 +1836,26 @@ contract Vault is ReentrancyGuard, IVault {
             }
 
             uint256 price = _isLong ? getMinPrice(_indexToken) : getMaxPrice(_indexToken);
-            emit DecreasePosition(key, _account, _collateralToken, _indexToken, _collateralDelta, _sizeDelta, _isLong, price, usdOut.sub(usdOutAfterFee));
-            emit ClosePosition(key, position.size, position.collateral, position.averagePrice, position.entryFundingRate, position.reserveAmount, position.realisedPnl);
+            emit DecreasePosition(
+                key,
+                _account,
+                _collateralToken,
+                _indexToken,
+                _collateralDelta,
+                _sizeDelta,
+                _isLong,
+                price,
+                usdOut.sub(usdOutAfterFee)
+            );
+            emit ClosePosition(
+                key,
+                position.size,
+                position.collateral,
+                position.averagePrice,
+                position.entryFundingRate,
+                position.reserveAmount,
+                position.realisedPnl
+            );
 
             delete positions[key];
         }
@@ -698,7 +1876,13 @@ contract Vault is ReentrancyGuard, IVault {
         return 0;
     }
 
-    function liquidatePosition(address _account, address _collateralToken, address _indexToken, bool _isLong, address _feeReceiver) external override nonReentrant {
+    function liquidatePosition(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        bool _isLong,
+        address _feeReceiver
+    ) external override nonReentrant {
         if (inPrivateLiquidationMode) {
             _validate(isLiquidator[msg.sender], 34);
         }
@@ -712,7 +1896,13 @@ contract Vault is ReentrancyGuard, IVault {
         Position memory position = positions[key];
         _validate(position.size > 0, 35);
 
-        (uint256 liquidationState, uint256 marginFees) = validateLiquidation(_account, _collateralToken, _indexToken, _isLong, false);
+        (uint256 liquidationState, uint256 marginFees) = validateLiquidation(
+            _account,
+            _collateralToken,
+            _indexToken,
+            _isLong,
+            false
+        );
         _validate(liquidationState != 0, 36);
         if (liquidationState == 2) {
             // max leverage exceeded but there is collateral remaining after deducting losses so decreasePosition instead
@@ -732,7 +1922,18 @@ contract Vault is ReentrancyGuard, IVault {
         }
 
         uint256 markPrice = _isLong ? getMinPrice(_indexToken) : getMaxPrice(_indexToken);
-        emit LiquidatePosition(key, _account, _collateralToken, _indexToken, _isLong, position.size, position.collateral, position.reserveAmount, position.realisedPnl, markPrice);
+        emit LiquidatePosition(
+            key,
+            _account,
+            _collateralToken,
+            _indexToken,
+            _isLong,
+            position.size,
+            position.collateral,
+            position.reserveAmount,
+            position.realisedPnl,
+            markPrice
+        );
 
         if (!_isLong && marginFees < position.collateral) {
             uint256 remainingCollateral = position.collateral.sub(marginFees);
@@ -754,19 +1955,25 @@ contract Vault is ReentrancyGuard, IVault {
     }
 
     // validateLiquidation returns (state, fees)
-    function validateLiquidation(address _account, address _collateralToken, address _indexToken, bool _isLong, bool _raise) override public view returns (uint256, uint256) {
+    function validateLiquidation(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        bool _isLong,
+        bool _raise
+    ) public view returns (uint256, uint256) {
         return vaultUtils.validateLiquidation(_account, _collateralToken, _indexToken, _isLong, _raise);
     }
 
-    function getMaxPrice(address _token) public override view returns (uint256) {
+    function getMaxPrice(address _token) public view override returns (uint256) {
         return IVaultPriceFeed(priceFeed).getPrice(_token, true, includeAmmPrice, useSwapPricing);
     }
 
-    function getMinPrice(address _token) public override view returns (uint256) {
+    function getMinPrice(address _token) public view override returns (uint256) {
         return IVaultPriceFeed(priceFeed).getPrice(_token, false, includeAmmPrice, useSwapPricing);
     }
 
-    function getRedemptionAmount(address _token, uint256 _usdgAmount) public override view returns (uint256) {
+    function getRedemptionAmount(address _token, uint256 _usdgAmount) public view override returns (uint256) {
         uint256 price = getMaxPrice(_token);
         uint256 redemptionAmount = _usdgAmount.mul(PRICE_PRECISION).div(price);
         return adjustForDecimals(redemptionAmount, usdg, _token);
@@ -784,36 +1991,71 @@ contract Vault is ReentrancyGuard, IVault {
         return tokenToUsdMin(_token, getRedemptionCollateral(_token));
     }
 
-    function adjustForDecimals(uint256 _amount, address _tokenDiv, address _tokenMul) public view returns (uint256) {
+    function adjustForDecimals(
+        uint256 _amount,
+        address _tokenDiv,
+        address _tokenMul
+    ) public view returns (uint256) {
         uint256 decimalsDiv = _tokenDiv == usdg ? USDG_DECIMALS : tokenDecimals[_tokenDiv];
         uint256 decimalsMul = _tokenMul == usdg ? USDG_DECIMALS : tokenDecimals[_tokenMul];
-        return _amount.mul(10 ** decimalsMul).div(10 ** decimalsDiv);
+        return _amount.mul(10**decimalsMul).div(10**decimalsDiv);
     }
 
-    function tokenToUsdMin(address _token, uint256 _tokenAmount) public override view returns (uint256) {
-        if (_tokenAmount == 0) { return 0; }
+    function tokenToUsdMin(address _token, uint256 _tokenAmount) public view override returns (uint256) {
+        if (_tokenAmount == 0) {
+            return 0;
+        }
         uint256 price = getMinPrice(_token);
         uint256 decimals = tokenDecimals[_token];
-        return _tokenAmount.mul(price).div(10 ** decimals);
+        return _tokenAmount.mul(price).div(10**decimals);
     }
 
     function usdToTokenMax(address _token, uint256 _usdAmount) public view returns (uint256) {
-        if (_usdAmount == 0) { return 0; }
+        if (_usdAmount == 0) {
+            return 0;
+        }
         return usdToToken(_token, _usdAmount, getMinPrice(_token));
     }
 
     function usdToTokenMin(address _token, uint256 _usdAmount) public view returns (uint256) {
-        if (_usdAmount == 0) { return 0; }
+        if (_usdAmount == 0) {
+            return 0;
+        }
         return usdToToken(_token, _usdAmount, getMaxPrice(_token));
     }
 
-    function usdToToken(address _token, uint256 _usdAmount, uint256 _price) public view returns (uint256) {
-        if (_usdAmount == 0) { return 0; }
+    function usdToToken(
+        address _token,
+        uint256 _usdAmount,
+        uint256 _price
+    ) public view returns (uint256) {
+        if (_usdAmount == 0) {
+            return 0;
+        }
         uint256 decimals = tokenDecimals[_token];
-        return _usdAmount.mul(10 ** decimals).div(_price);
+        return _usdAmount.mul(10**decimals).div(_price);
     }
 
-    function getPosition(address _account, address _collateralToken, address _indexToken, bool _isLong) public override view returns (uint256, uint256, uint256, uint256, uint256, uint256, bool, uint256) {
+    function getPosition(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        bool _isLong
+    )
+        public
+        view
+        override
+        returns (
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            bool,
+            uint256
+        )
+    {
         bytes32 key = getPositionKey(_account, _collateralToken, _indexToken, _isLong);
         Position memory position = positions[key];
         uint256 realisedPnl = position.realisedPnl > 0 ? uint256(position.realisedPnl) : uint256(-position.realisedPnl);
@@ -829,13 +2071,13 @@ contract Vault is ReentrancyGuard, IVault {
         );
     }
 
-    function getPositionKey(address _account, address _collateralToken, address _indexToken, bool _isLong) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(
-            _account,
-            _collateralToken,
-            _indexToken,
-            _isLong
-        ));
+    function getPositionKey(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        bool _isLong
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_account, _collateralToken, _indexToken, _isLong));
     }
 
     function updateCumulativeFundingRate(address _collateralToken, address _indexToken) public {
@@ -860,12 +2102,16 @@ contract Vault is ReentrancyGuard, IVault {
         emit UpdateFundingRate(_collateralToken, cumulativeFundingRates[_collateralToken]);
     }
 
-    function getNextFundingRate(address _token) public override view returns (uint256) {
-        if (lastFundingTimes[_token].add(fundingInterval) > block.timestamp) { return 0; }
+    function getNextFundingRate(address _token) public view override returns (uint256) {
+        if (lastFundingTimes[_token].add(fundingInterval) > block.timestamp) {
+            return 0;
+        }
 
         uint256 intervals = block.timestamp.sub(lastFundingTimes[_token]).div(fundingInterval);
         uint256 poolAmount = poolAmounts[_token];
-        if (poolAmount == 0) { return 0; }
+        if (poolAmount == 0) {
+            return 0;
+        }
 
         uint256 _fundingRateFactor = stableTokens[_token] ? stableFundingRateFactor : fundingRateFactor;
         return _fundingRateFactor.mul(reservedAmounts[_token]).mul(intervals).div(poolAmount);
@@ -873,12 +2119,19 @@ contract Vault is ReentrancyGuard, IVault {
 
     function getUtilisation(address _token) public view returns (uint256) {
         uint256 poolAmount = poolAmounts[_token];
-        if (poolAmount == 0) { return 0; }
+        if (poolAmount == 0) {
+            return 0;
+        }
 
         return reservedAmounts[_token].mul(FUNDING_RATE_PRECISION).div(poolAmount);
     }
 
-    function getPositionLeverage(address _account, address _collateralToken, address _indexToken, bool _isLong) public view returns (uint256) {
+    function getPositionLeverage(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        bool _isLong
+    ) public view returns (uint256) {
         bytes32 key = getPositionKey(_account, _collateralToken, _indexToken, _isLong);
         Position memory position = positions[key];
         _validate(position.collateral > 0, 37);
@@ -887,7 +2140,15 @@ contract Vault is ReentrancyGuard, IVault {
 
     // for longs: nextAveragePrice = (nextPrice * nextSize)/ (nextSize + delta)
     // for shorts: nextAveragePrice = (nextPrice * nextSize) / (nextSize - delta)
-    function getNextAveragePrice(address _indexToken, uint256 _size, uint256 _averagePrice, bool _isLong, uint256 _nextPrice, uint256 _sizeDelta, uint256 _lastIncreasedTime) public view returns (uint256) {
+    function getNextAveragePrice(
+        address _indexToken,
+        uint256 _size,
+        uint256 _averagePrice,
+        bool _isLong,
+        uint256 _nextPrice,
+        uint256 _sizeDelta,
+        uint256 _lastIncreasedTime
+    ) public view returns (uint256) {
         (bool hasProfit, uint256 delta) = getDelta(_indexToken, _size, _averagePrice, _isLong, _lastIncreasedTime);
         uint256 nextSize = _size.add(_sizeDelta);
         uint256 divisor;
@@ -901,7 +2162,11 @@ contract Vault is ReentrancyGuard, IVault {
 
     // for longs: nextAveragePrice = (nextPrice * nextSize)/ (nextSize + delta)
     // for shorts: nextAveragePrice = (nextPrice * nextSize) / (nextSize - delta)
-    function getNextGlobalShortAveragePrice(address _indexToken, uint256 _nextPrice, uint256 _sizeDelta) public view returns (uint256) {
+    function getNextGlobalShortAveragePrice(
+        address _indexToken,
+        uint256 _nextPrice,
+        uint256 _sizeDelta
+    ) public view returns (uint256) {
         uint256 size = globalShortSizes[_indexToken];
         uint256 averagePrice = globalShortAveragePrices[_indexToken];
         uint256 priceDelta = averagePrice > _nextPrice ? averagePrice.sub(_nextPrice) : _nextPrice.sub(averagePrice);
@@ -916,7 +2181,9 @@ contract Vault is ReentrancyGuard, IVault {
 
     function getGlobalShortDelta(address _token) public view returns (bool, uint256) {
         uint256 size = globalShortSizes[_token];
-        if (size == 0) { return (false, 0); }
+        if (size == 0) {
+            return (false, 0);
+        }
 
         uint256 nextPrice = getMaxPrice(_token);
         uint256 averagePrice = globalShortAveragePrices[_token];
@@ -927,13 +2194,24 @@ contract Vault is ReentrancyGuard, IVault {
         return (hasProfit, delta);
     }
 
-    function getPositionDelta(address _account, address _collateralToken, address _indexToken, bool _isLong) public view returns (bool, uint256) {
+    function getPositionDelta(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        bool _isLong
+    ) public view returns (bool, uint256) {
         bytes32 key = getPositionKey(_account, _collateralToken, _indexToken, _isLong);
         Position memory position = positions[key];
         return getDelta(_indexToken, position.size, position.averagePrice, _isLong, position.lastIncreasedTime);
     }
 
-    function getDelta(address _indexToken, uint256 _size, uint256 _averagePrice, bool _isLong, uint256 _lastIncreasedTime) public override view returns (bool, uint256) {
+    function getDelta(
+        address _indexToken,
+        uint256 _size,
+        uint256 _averagePrice,
+        bool _isLong,
+        uint256 _lastIncreasedTime
+    ) public view override returns (bool, uint256) {
         _validate(_averagePrice > 0, 38);
         uint256 price = _isLong ? getMinPrice(_indexToken) : getMaxPrice(_indexToken);
         uint256 priceDelta = _averagePrice > price ? _averagePrice.sub(price) : price.sub(_averagePrice);
@@ -949,7 +2227,9 @@ contract Vault is ReentrancyGuard, IVault {
 
         // if the minProfitTime has passed then there will be no min profit threshold
         // the min profit threshold helps to prevent front-running issues
-        uint256 minBps = block.timestamp > _lastIncreasedTime.add(minProfitTime) ? 0 : minProfitBasisPoints[_indexToken];
+        uint256 minBps = block.timestamp > _lastIncreasedTime.add(minProfitTime)
+            ? 0
+            : minProfitBasisPoints[_indexToken];
         if (hasProfit && delta.mul(BASIS_POINTS_DIVISOR) <= _size.mul(minBps)) {
             delta = 0;
         }
@@ -957,15 +2237,32 @@ contract Vault is ReentrancyGuard, IVault {
         return (hasProfit, delta);
     }
 
-    function getEntryFundingRate(address _collateralToken, address _indexToken, bool _isLong) public view returns (uint256) {
+    function getEntryFundingRate(
+        address _collateralToken,
+        address _indexToken,
+        bool _isLong
+    ) public view returns (uint256) {
         return vaultUtils.getEntryFundingRate(_collateralToken, _indexToken, _isLong);
     }
 
-    function getFundingFee(address _account, address _collateralToken, address _indexToken, bool _isLong, uint256 _size, uint256 _entryFundingRate) public view returns (uint256) {
+    function getFundingFee(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        bool _isLong,
+        uint256 _size,
+        uint256 _entryFundingRate
+    ) public view returns (uint256) {
         return vaultUtils.getFundingFee(_account, _collateralToken, _indexToken, _isLong, _size, _entryFundingRate);
     }
 
-    function getPositionFee(address _account, address _collateralToken, address _indexToken, bool _isLong, uint256 _sizeDelta) public view returns (uint256) {
+    function getPositionFee(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        bool _isLong,
+        uint256 _sizeDelta
+    ) public view returns (uint256) {
         return vaultUtils.getPositionFee(_account, _collateralToken, _indexToken, _isLong, _sizeDelta);
     }
 
@@ -978,31 +2275,60 @@ contract Vault is ReentrancyGuard, IVault {
     // 6. initialAmount is close to targetAmount, action reduces balance largely => low tax
     // 7. initialAmount is above targetAmount, nextAmount is below targetAmount and vice versa
     // 8. a large swap should have similar fees as the same trade split into multiple smaller swaps
-    function getFeeBasisPoints(address _token, uint256 _usdgDelta, uint256 _feeBasisPoints, uint256 _taxBasisPoints, bool _increment) public override view returns (uint256) {
+    function getFeeBasisPoints(
+        address _token,
+        uint256 _usdgDelta,
+        uint256 _feeBasisPoints,
+        uint256 _taxBasisPoints,
+        bool _increment
+    ) public view override returns (uint256) {
         return vaultUtils.getFeeBasisPoints(_token, _usdgDelta, _feeBasisPoints, _taxBasisPoints, _increment);
     }
 
-    function getTargetUsdgAmount(address _token) public override view returns (uint256) {
+    function getTargetUsdgAmount(address _token) public view override returns (uint256) {
         uint256 supply = IERC20(usdg).totalSupply();
-        if (supply == 0) { return 0; }
+        if (supply == 0) {
+            return 0;
+        }
         uint256 weight = tokenWeights[_token];
         return weight.mul(supply).div(totalTokenWeights);
     }
 
-    function _reduceCollateral(address _account, address _collateralToken, address _indexToken, uint256 _collateralDelta, uint256 _sizeDelta, bool _isLong) private returns (uint256, uint256) {
+    function _reduceCollateral(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        uint256 _collateralDelta,
+        uint256 _sizeDelta,
+        bool _isLong
+    ) private returns (uint256, uint256) {
         bytes32 key = getPositionKey(_account, _collateralToken, _indexToken, _isLong);
         Position storage position = positions[key];
 
-        uint256 fee = _collectMarginFees(_account, _collateralToken, _indexToken, _isLong, _sizeDelta, position.size, position.entryFundingRate);
+        uint256 fee = _collectMarginFees(
+            _account,
+            _collateralToken,
+            _indexToken,
+            _isLong,
+            _sizeDelta,
+            position.size,
+            position.entryFundingRate
+        );
         bool hasProfit;
         uint256 adjustedDelta;
 
         // scope variables to avoid stack too deep errors
         {
-        (bool _hasProfit, uint256 delta) = getDelta(_indexToken, position.size, position.averagePrice, _isLong, position.lastIncreasedTime);
-        hasProfit = _hasProfit;
-        // get the proportional change in pnl
-        adjustedDelta = _sizeDelta.mul(delta).div(position.size);
+            (bool _hasProfit, uint256 delta) = getDelta(
+                _indexToken,
+                position.size,
+                position.averagePrice,
+                _isLong,
+                position.lastIncreasedTime
+            );
+            hasProfit = _hasProfit;
+            // get the proportional change in pnl
+            adjustedDelta = _sizeDelta.mul(delta).div(position.size);
         }
 
         uint256 usdOut;
@@ -1072,12 +2398,20 @@ contract Vault is ReentrancyGuard, IVault {
     }
 
     function _validateRouter(address _account) private view {
-        if (msg.sender == _account) { return; }
-        if (msg.sender == router) { return; }
+        if (msg.sender == _account) {
+            return;
+        }
+        if (msg.sender == router) {
+            return;
+        }
         _validate(approvedRouters[_account][msg.sender], 41);
     }
 
-    function _validateTokens(address _collateralToken, address _indexToken, bool _isLong) private view {
+    function _validateTokens(
+        address _collateralToken,
+        address _indexToken,
+        bool _isLong
+    ) private view {
         if (_isLong) {
             _validate(_collateralToken == _indexToken, 42);
             _validate(whitelistedTokens[_collateralToken], 43);
@@ -1091,7 +2425,11 @@ contract Vault is ReentrancyGuard, IVault {
         _validate(shortableTokens[_indexToken], 48);
     }
 
-    function _collectSwapFees(address _token, uint256 _amount, uint256 _feeBasisPoints) private returns (uint256) {
+    function _collectSwapFees(
+        address _token,
+        uint256 _amount,
+        uint256 _feeBasisPoints
+    ) private returns (uint256) {
         uint256 afterFeeAmount = _amount.mul(BASIS_POINTS_DIVISOR.sub(_feeBasisPoints)).div(BASIS_POINTS_DIVISOR);
         uint256 feeAmount = _amount.sub(afterFeeAmount);
         feeReserves[_token] = feeReserves[_token].add(feeAmount);
@@ -1099,7 +2437,15 @@ contract Vault is ReentrancyGuard, IVault {
         return afterFeeAmount;
     }
 
-    function _collectMarginFees(address _account, address _collateralToken, address _indexToken, bool _isLong, uint256 _sizeDelta, uint256 _size, uint256 _entryFundingRate) private returns (uint256) {
+    function _collectMarginFees(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        bool _isLong,
+        uint256 _sizeDelta,
+        uint256 _size,
+        uint256 _entryFundingRate
+    ) private returns (uint256) {
         uint256 feeUsd = getPositionFee(_account, _collateralToken, _indexToken, _isLong, _sizeDelta);
 
         uint256 fundingFee = getFundingFee(_account, _collateralToken, _indexToken, _isLong, _size, _entryFundingRate);
@@ -1120,7 +2466,11 @@ contract Vault is ReentrancyGuard, IVault {
         return nextBalance.sub(prevBalance);
     }
 
-    function _transferOut(address _token, uint256 _amount, address _receiver) private {
+    function _transferOut(
+        address _token,
+        uint256 _amount,
+        address _receiver
+    ) private {
         IERC20(_token).safeTransfer(_receiver, _amount);
         tokenBalances[_token] = IERC20(_token).balanceOf(address(this));
     }
@@ -1193,7 +2543,7 @@ contract Vault is ReentrancyGuard, IVault {
         emit DecreaseGuaranteedUsd(_token, _usdAmount);
     }
 
-    function _increaseGlobalShortSize(address _token, uint256 _amount) internal {
+    function _increaseGlobalShortSize(address _token, uint256 _amount) private {
         globalShortSizes[_token] = globalShortSizes[_token].add(_amount);
 
         uint256 maxSize = maxGlobalShortSizes[_token];
@@ -1205,8 +2555,8 @@ contract Vault is ReentrancyGuard, IVault {
     function _decreaseGlobalShortSize(address _token, uint256 _amount) private {
         uint256 size = globalShortSizes[_token];
         if (_amount > size) {
-          globalShortSizes[_token] = 0;
-          return;
+            globalShortSizes[_token] = 0;
+            return;
         }
 
         globalShortSizes[_token] = size.sub(_amount);
@@ -1226,7 +2576,9 @@ contract Vault is ReentrancyGuard, IVault {
 
     // we have this validation as a function instead of a modifier to reduce contract size
     function _validateGasPrice() private view {
-        if (maxGasPrice == 0) { return; }
+        if (maxGasPrice == 0) {
+            return;
+        }
         _validate(tx.gasprice <= maxGasPrice, 55);
     }
 
