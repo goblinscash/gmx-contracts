@@ -11,7 +11,7 @@ OrderBook	        Deploy	Router
 		                    Vault	
 OrderExecutor	    Deploy	OrderBook	
 		                    Vault	
-ShortsTracker	    Deploy	Vault	
+ReferralStorage
 PositionManageer	Deploy	Router	
                             ShortsTracker	
                             OrderBook	
